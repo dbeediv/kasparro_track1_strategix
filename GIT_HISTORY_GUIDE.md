@@ -77,8 +77,3 @@ git commit -m "docs: technical document addendum (D16 Groq decision), git histor
 3. `git push -u origin main`
 4. Paste the repo URL in your submission email
 
-## Why this matters
-
-The hackathon doc says: "A single 'final submission' commit shows the opposite of engineering discipline."
-
-Each commit above corresponds to a real architectural decision. Judges can click through the history and see a logical build progression — not just code dumped at the last minute.

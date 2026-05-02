@@ -1,8 +1,5 @@
 # ShopMind — Screenshots
 
-> **Before submitting:** Take all 12 screenshots listed below and place them in this folder.
-> Name files exactly as listed — the README on GitHub will reference them.
-
 ## Screenshot checklist
 
 | # | Filename | What to capture | Judging criterion |

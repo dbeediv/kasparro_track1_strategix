@@ -44,7 +44,7 @@ ShopMind replaces the entire browse-search-filter-compare loop with a single con
 
 ### 1. Clone and install
 ```bash
-git clone https://github.com/YOUR_USERNAME/shopmind.git
+git clone https://github.com/dbeediv/shopmind.git
 cd shopmind
 npm install
 ```

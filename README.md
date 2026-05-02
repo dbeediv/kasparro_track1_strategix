@@ -122,7 +122,7 @@ shopmind/
 │   ├── ShopMind_Technical_Document.pdf
 │   └── ShopMind_Decision_Log_formatted.pdf
 ├── screenshots/               # UI screenshots — see screenshots/README.md
-├── DECISION_LOG.md            # 15 documented build decisions
+├── DECISION_LOG.md            # 17 documented build decisions
 ├── CONTRIBUTION.md            # Team roles and AI tools used
 └── README.md
 ```
@@ -164,7 +164,7 @@ See [`screenshots/README.md`](screenshots/README.md) for the screenshot guide.
 | [Product Document](docs/ShopMind_Product_Document.pdf) | What/why/who, scope decisions, tradeoffs, what NOT built |
 | [Technical Document](docs/ShopMind_Technical_Document.pdf) | Architecture, metafield schema, failure handling, AI/deterministic boundary |
 | [Technical Document Addendum](docs/TECHNICAL_DOCUMENT_ADDENDUM.md) | AI provider update: Claude → Groq (D16). Read alongside Technical Document. |
-| [Decision Log](DECISION_LOG.md) | 15 documented build decisions with reasoning |
+| [Decision Log](DECISION_LOG.md) | 17 documented build decisions with reasoning |
 | [Contribution Note](CONTRIBUTION.md) | Team roles, AI tools used, time split |
 
 ---

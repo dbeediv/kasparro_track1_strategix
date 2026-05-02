@@ -3,7 +3,7 @@
 > **The invisible decision brain for agentic commerce.**  
 > Built for **Kasparro Agentic Commerce Hackathon, April 2026** — Track 1: AI Shopping Agent.
 
-**[▶ Demo Video](ADD_YOUTUBE_OR_DRIVE_LINK_HERE)** ← *Replace this URL before submitting* | **[Product Document](docs/ShopMind_Product_Document.pdf)** | **[Technical Document](docs/ShopMind_Technical_Document.pdf)** | **[Decision Log](DECISION_LOG.md)**
+**[▶ Demo Video](https://drive.google.com/file/d/1sTmgXyCLk_L-P4AJdEHZvietXVzu7xNC/view?pli=1) | **[Product Document](docs/ShopMind_Product_Document.pdf)** | **[Technical Document](docs/ShopMind_Technical_Document.pdf)** | **[Decision Log](DECISION_LOG.md)**
 
 ---
 
@@ -57,11 +57,15 @@ cp .env.example .env
 
 Required values:
 ```
-SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
-SHOPIFY_ADMIN_ACCESS_TOKEN=shpat_xxx    # Admin API token, not Storefront
+SHOPIFY_STORE_DOMAIN=shopmind-a48eho1s.myshopify.com
+SHOPIFY_ADMIN_ACCESS_TOKEN=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
 SHOPIFY_API_VERSION=2024-01
-GROQ_API_KEY=gsk_xxx
 PORT=3000
+NODE_ENV=development
+SESSION_SECRET=shopmind-secret-change-this-in-production
+
+GROQ_API_KEY=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
+
 ```
 
 **Shopify Admin API scopes needed:**

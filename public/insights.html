@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShopMind — Merchant Insights</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f4f2;
+      --surface: #ffffff;
+      --border: #e4e0da;
+      --text: #1a1814;
+      --muted: #7a7368;
+      --accent: #c8602a;
+      --accent-light: #f5ede6;
+      --green: #2d7a4f;
+      --green-light: #e8f5ee;
+      --yellow: #9a6f1a;
+      --yellow-light: #fff4e0;
+      --red: #9a2020;
+      --red-light: #fde8e8;
+      --shadow: 0 2px 16px rgba(0,0,0,0.07);
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .logo a { text-decoration: none; color: inherit; }
+    .badge { font-size: 11px; background: var(--accent-light); color: var(--accent); padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+    .refresh-btn {
+      padding: 8px 18px; border-radius: 20px; border: 1.5px solid var(--border);
+      background: var(--surface); font-size: 13px; cursor: pointer; transition: all 0.2s;
+    }
+    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+    h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
+
+    /* Empty state */
+    #empty-state {
+      text-align: center; padding: 80px 24px;
+      background: var(--surface); border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+    #empty-state .emoji { font-size: 48px; margin-bottom: 16px; }
+    #empty-state h2 { font-size: 20px; margin-bottom: 8px; }
+    #empty-state p { color: var(--muted); font-size: 14px; }
+    #empty-state a { color: var(--accent); text-decoration: none; }
+
+    /* Stats grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: var(--surface); border-radius: 14px; padding: 20px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+    .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .stat-value { font-size: 32px; font-weight: 800; color: var(--text); }
+    .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* Two-col layout */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .card { background: var(--surface); border-radius: 16px; padding: 22px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+    .card-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 18px; }
+
+    /* Emotion tags */
+    .tag-list { display: flex; flex-direction: column; gap: 10px; }
+    .tag-row { display: flex; align-items: center; gap: 10px; }
+    .tag-name { font-size: 14px; font-weight: 500; min-width: 100px; }
+    .tag-bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+    .tag-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.8s ease; }
+    .tag-count { font-size: 13px; color: var(--muted); min-width: 24px; text-align: right; }
+
+    /* Dropoff */
+    .dropoff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .dropoff-block { border-radius: 12px; padding: 16px; text-align: center; }
+    .dropoff-block .val { font-size: 28px; font-weight: 800; }
+    .dropoff-block .lbl { font-size: 12px; margin-top: 4px; font-weight: 500; }
+    .dropoff-low { background: var(--green-light); color: var(--green); }
+    .dropoff-medium { background: var(--yellow-light); color: var(--yellow); }
+    .dropoff-high { background: var(--red-light); color: var(--red); }
+
+    /* Products table */
+    .prod-list { display: flex; flex-direction: column; gap: 10px; }
+    .prod-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: var(--bg); border-radius: 10px; }
+    .prod-handle { font-size: 13px; font-weight: 600; font-family: monospace; }
+    .prod-count { font-size: 13px; color: var(--muted); }
+    .prod-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .prod-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+
+    /* Stage funnel */
+    .funnel-list { display: flex; flex-direction: column; gap: 8px; }
+    .funnel-row { display: flex; align-items: center; gap: 12px; }
+    .funnel-stage {
+      font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px;
+      padding: 4px 10px; border-radius: 20px; background: var(--accent-light); color: var(--accent);
+      min-width: 120px; text-align: center;
+    }
+    .funnel-count { font-size: 14px; font-weight: 600; min-width: 30px; }
+    .funnel-bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+    .funnel-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #e8804a); border-radius: 4px; }
+
+    /* Catalog gaps */
+    .gap-list { display: flex; flex-direction: column; gap: 8px; }
+    .gap-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--yellow-light); border-radius: 10px; }
+    .gap-desc { font-size: 13px; color: var(--yellow); }
+    .gap-count { font-size: 13px; font-weight: 700; color: var(--yellow); }
+
+    /* Recent events */
+    .event-list { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; }
+    .event-row { padding: 10px 14px; background: var(--bg); border-radius: 10px; font-size: 12px; }
+    .event-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+    .event-stage { background: var(--accent-light); color: var(--accent); padding: 2px 8px; border-radius: 10px; font-weight: 600; font-size: 11px; }
+    .event-risk-low { background: var(--green-light); color: var(--green); padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+    .event-risk-medium { background: var(--yellow-light); color: var(--yellow); padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+    .event-risk-high { background: var(--red-light); color: var(--red); padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+    .event-time { color: var(--muted); font-size: 11px; margin-left: auto; }
+    .event-detail { color: var(--muted); }
+
+    .full-width { grid-column: 1 / -1; }
+    .loading { text-align: center; color: var(--muted); padding: 40px; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <a href="/">🛍 ShopMind</a>
+    <span class="badge">📊 Merchant Insights</span>
+  </div>
+  <button class="refresh-btn" onclick="loadInsights()">↻ Refresh</button>
+</header>
+
+<main>
+  <h1>Merchant Insights</h1>
+  <p class="subtitle">Live signal from every ShopMind conversation — L11 intelligence feed</p>
+
+  <div id="content">
+    <div class="loading">Loading insights…</div>
+  </div>
+</main>
+
+<script>
+  async function loadInsights() {
+    document.getElementById('content').innerHTML = '<div class="loading">Loading insights…</div>';
+    try {
+      const res = await fetch('/api/insights');
+      const data = await res.json();
+      render(data);
+    } catch (e) {
+      document.getElementById('content').innerHTML = '<div class="loading">Failed to load insights.</div>';
+    }
+  }
+
+  function render(d) {
+    if (d.message === 'No sessions yet.') {
+      document.getElementById('content').innerHTML = `
+        <div id="empty-state">
+          <div class="emoji">🌱</div>
+          <h2>No conversations yet</h2>
+          <p>Once buyers start chatting, insights will appear here.<br>
+          <a href="/">Go to ShopMind →</a></p>
+        </div>
+      `;
+      return;
+    }
+
+    const maxEmotion = d.topEmotionTags?.[0]?.count || 1;
+    const maxProd = d.topRecommendedProducts?.[0]?.count || 1;
+    const maxFunnel = Math.max(...Object.values(d.stageFunnel || {}), 1);
+
+    document.getElementById('content').innerHTML = `
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Events</div>
+          <div class="stat-value">${d.totalEvents}</div>
+          <div class="stat-sub">interactions recorded</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Unique Sessions</div>
+          <div class="stat-value">${d.uniqueSessions}</div>
+          <div class="stat-sub">buyers engaged</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Confidence</div>
+          <div class="stat-value">${d.avgConfidence != null ? d.avgConfidence + '%' : '—'}</div>
+          <div class="stat-sub">match strength</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Catalog Gaps</div>
+          <div class="stat-value">${d.catalogGaps?.length || 0}</div>
+          <div class="stat-sub">unmet demands</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Top emotion tags -->
+        <div class="card">
+          <div class="card-title">🏷 Top Emotion Tags</div>
+          <div class="tag-list">
+            ${(d.topEmotionTags || []).slice(0, 8).map(t => `
+              <div class="tag-row">
+                <div class="tag-name">${esc(t.tag)}</div>
+                <div class="tag-bar-track">
+                  <div class="tag-bar-fill" style="width:${Math.round(t.count/maxEmotion*100)}%"></div>
+                </div>
+                <div class="tag-count">${t.count}</div>
+              </div>
+            `).join('') || '<div style="color:var(--muted);font-size:14px;">No data yet</div>'}
+          </div>
+        </div>
+
+        <!-- Dropoff risk -->
+        <div class="card">
+          <div class="card-title">⚡ Dropoff Risk Distribution</div>
+          <div class="dropoff-grid">
+            <div class="dropoff-block dropoff-low">
+              <div class="val">${d.dropoffRiskDistribution?.low || 0}</div>
+              <div class="lbl">Low Risk</div>
+            </div>
+            <div class="dropoff-block dropoff-medium">
+              <div class="val">${d.dropoffRiskDistribution?.medium || 0}</div>
+              <div class="lbl">Medium Risk</div>
+            </div>
+            <div class="dropoff-block dropoff-high">
+              <div class="val">${d.dropoffRiskDistribution?.high || 0}</div>
+              <div class="lbl">High Risk</div>
+            </div>
+          </div>
+          <div style="margin-top:20px;">
+            <div class="card-title">🎯 Stage Funnel</div>
+            <div class="funnel-list">
+              ${Object.entries(d.stageFunnel || {}).map(([stage, count]) => `
+                <div class="funnel-row">
+                  <div class="funnel-stage">${esc(stage)}</div>
+                  <div class="funnel-count">${count}</div>
+                  <div class="funnel-bar-track">
+                    <div class="funnel-bar-fill" style="width:${Math.round(count/maxFunnel*100)}%"></div>
+                  </div>
+                </div>
+              `).join('') || '<div style="color:var(--muted);font-size:14px;">No data yet</div>'}
+            </div>
+          </div>
+        </div>
+
+        <!-- Top products -->
+        <div class="card">
+          <div class="card-title">🏆 Top Recommended Products</div>
+          <div class="prod-list">
+            ${(d.topRecommendedProducts || []).slice(0, 8).map(p => `
+              <div class="prod-row">
+                <div class="prod-handle">${esc(p.handle)}</div>
+                <div class="prod-bar">
+                  <div class="prod-bar-fill" style="width:${Math.round(p.count/maxProd*100)}%"></div>
+                </div>
+                <div class="prod-count">${p.count}×</div>
+              </div>
+            `).join('') || '<div style="color:var(--muted);font-size:14px;">No recommendations yet</div>'}
+          </div>
+        </div>
+
+        <!-- Catalog gaps -->
+        <div class="card">
+          <div class="card-title">🔍 Catalog Gaps (Unmet Demand)</div>
+          <div class="gap-list">
+            ${(d.catalogGaps || []).slice(0, 8).map(g => `
+              <div class="gap-row">
+                <div class="gap-desc">${esc(g.description)}</div>
+                <div class="gap-count">${g.count}×</div>
+              </div>
+            `).join('') || '<div style="color:var(--muted);font-size:14px;padding:10px;">No gaps detected — catalog matches demand well</div>'}
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent events -->
+      <div class="card">
+        <div class="card-title">📋 Recent Events (last 20)</div>
+        <div class="event-list">
+          ${(d.recentEvents || []).map(e => `
+            <div class="event-row">
+              <div class="event-meta">
+                <span class="event-stage">${esc(e.stage || 'unknown')}</span>
+                ${e.dropoffRisk ? `<span class="event-risk-${e.dropoffRisk}">${e.dropoffRisk} risk</span>` : ''}
+                ${e.recommendedHandle ? `<span style="font-size:11px;color:var(--muted);">→ ${esc(e.recommendedHandle)}</span>` : ''}
+                ${e.confidence ? `<span style="font-size:11px;color:var(--accent);">${e.confidence}%</span>` : ''}
+                <span class="event-time">${e.timestamp ? new Date(e.timestamp).toLocaleTimeString() : ''}</span>
+              </div>
+              <div class="event-detail">
+                Session ${esc(String(e.sessionId || '').slice(0,8))}… · Turn ${e.turn || 0}
+                ${e.emotionTags?.length ? ' · ' + e.emotionTags.slice(0,3).map(t => esc(t)).join(', ') : ''}
+              </div>
+            </div>
+          `).join('') || '<div style="color:var(--muted);font-size:14px;">No events yet</div>'}
+        </div>
+      </div>
+    `;
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  loadInsights();
+  // Auto-refresh every 30 seconds
+  setInterval(loadInsights, 30000);
+</script>
+</body>
+</html>

@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShopMind — Find the Perfect Gift</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #faf9f7;
+      --surface: #ffffff;
+      --border: #e8e4de;
+      --text: #1a1814;
+      --muted: #7a7368;
+      --accent: #c8602a;
+      --accent-light: #f5ede6;
+      --accent-hover: #b05522;
+      --bubble-user: #1a1814;
+      --bubble-ai: #ffffff;
+      --radius: 18px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+    }
+    .logo-icon { font-size: 24px; }
+    .logo-sub { font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+    .header-right { display: flex; gap: 12px; align-items: center; }
+    .header-link {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .header-link:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+
+    /* ── Main layout ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 16px 100px;
+    }
+
+    /* ── Mood canvas ── */
+    #mood-section {
+      padding: 32px 0 24px;
+      text-align: center;
+    }
+    .mood-intro { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .mood-sub { font-size: 15px; color: var(--muted); margin-bottom: 24px; }
+    .mood-tiles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .mood-tile {
+      padding: 10px 20px;
+      border-radius: 40px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .mood-tile:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .mood-tile.selected { background: var(--accent); color: white; border-color: var(--accent); }
+    .mood-cta {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    #mood-submit {
+      padding: 12px 28px;
+      border-radius: 40px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #mood-submit:hover { background: var(--accent-hover); }
+    #mood-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+    .mood-skip { font-size: 13px; color: var(--muted); cursor: pointer; padding: 12px; text-decoration: underline; }
+
+    /* ── Chat ── */
+    #chat-section { display: none; flex-direction: column; gap: 0; padding-top: 24px; }
+    #messages { display: flex; flex-direction: column; gap: 16px; }
+
+    .msg-row { display: flex; gap: 12px; align-items: flex-end; }
+    .msg-row.user { flex-direction: row-reverse; }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .avatar.ai { background: var(--accent-light); }
+    .avatar.user { background: var(--bubble-user); color: white; }
+    .bubble {
+      max-width: 80%;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+    .bubble.ai {
+      background: var(--bubble-ai);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      box-shadow: var(--shadow);
+    }
+    .bubble.user {
+      background: var(--bubble-user);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .bubble .question {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-style: italic;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* ── Product card ── */
+    .product-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 8px;
+      box-shadow: var(--shadow);
+    }
+    .product-card img { width: 100%; height: 200px; object-fit: cover; background: var(--accent-light); }
+    .product-card .img-placeholder {
+      width: 100%; height: 160px;
+      background: linear-gradient(135deg, var(--accent-light), #ede8e2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px;
+    }
+    .product-body { padding: 16px; }
+    .product-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+    .product-price { font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+    .product-reason { font-size: 14px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+    .confidence-bar { margin-bottom: 12px; }
+    .confidence-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 1s ease; }
+    .social-proof {
+      background: var(--accent-light);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .social-proof .quote { font-style: italic; color: var(--text); margin-bottom: 4px; }
+    .social-proof .persona { color: var(--muted); font-size: 12px; }
+    .caveat {
+      font-size: 13px;
+      color: #b08040;
+      background: #fef9f0;
+      border: 1px solid #f0e0b8;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+    }
+    .product-actions { display: flex; gap: 10px; }
+    .btn-cart {
+      flex: 1;
+      padding: 13px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-cart:hover { background: var(--accent-hover); }
+    .btn-cart:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-secondary {
+      padding: 13px 20px;
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Regret prevention ── */
+    .regret-card {
+      background: #f0f9f4;
+      border: 1px solid #b8dfc8;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    .regret-card .objection { font-weight: 600; color: #2d6a4f; margin-bottom: 6px; }
+    .regret-card .answer { color: var(--text); line-height: 1.5; }
+
+    /* ── Upsell ── */
+    .upsell-card {
+      background: var(--surface);
+      border: 1.5px dashed var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-top: 8px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .upsell-img {
+      width: 60px; height: 60px; border-radius: 10px;
+      object-fit: cover; background: var(--accent-light);
+      flex-shrink: 0;
+    }
+    .upsell-img-placeholder {
+      width: 60px; height: 60px; border-radius: 10px;
+      background: var(--accent-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .upsell-info { flex: 1; }
+    .upsell-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
+    .upsell-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .upsell-framing { font-size: 13px; color: var(--muted); }
+    .upsell-price { font-size: 15px; font-weight: 700; color: var(--accent); }
+    .btn-upsell {
+      padding: 8px 16px;
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-upsell:hover { background: var(--accent); color: white; }
+
+    /* ── L3 Comparison card ── */
+    .comparison-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-top: 8px;
+    }
+    .comparison-header { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 10px; }
+    .comparison-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .comparison-col {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+    .comparison-col.winner { border-color: var(--accent); background: var(--accent-light); }
+    .comparison-col-title { font-weight: 600; margin-bottom: 4px; font-size: 13px; }
+    .comparison-col-dim { color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .comparison-winner-tag { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; }
+    .comparison-verdict { font-size: 13px; color: var(--text); line-height: 1.5; border-top: 1px solid var(--border); padding-top: 10px; }
+
+    /* ── L10 Return visit banner ── */
+    .return-banner {
+      background: #fff8f5;
+      border: 1.5px solid var(--accent);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .return-banner-icon { font-size: 18px; flex-shrink: 0; }
+    .return-banner-text { flex: 1; line-height: 1.4; }
+    .return-banner-text strong { color: var(--accent); font-weight: 600; }
+
+
+    /* ── Typing indicator ── */
+    .typing { display: flex; gap: 5px; align-items: center; padding: 14px 18px; }
+    .typing span {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--muted); opacity: 0.5; animation: bounce 1.2s infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+    /* ── Input area ── */
+    #input-area {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(250,249,247,0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: none;
+    }
+    .input-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    #user-input {
+      flex: 1;
+      padding: 13px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 24px;
+      font-size: 15px;
+      font-family: inherit;
+      background: var(--surface);
+      resize: none;
+      max-height: 120px;
+      outline: none;
+      transition: border-color 0.2s;
+      line-height: 1.4;
+    }
+    #user-input:focus { border-color: var(--accent); }
+    #send-btn {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #send-btn:hover { background: var(--accent-hover); }
+    #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Misc ── */
+    .checkout-banner {
+      background: #1a1814;
+      color: white;
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-top: 10px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .checkout-banner a {
+      color: #f5c842;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .checkout-banner a:hover { text-decoration: underline; }
+
+    .confidence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+    .conf-high { background: #e8f5ee; color: #2d7a4f; }
+    .conf-mid { background: #fff4e0; color: #9a6f1a; }
+    .conf-low { background: #fde8e8; color: #9a2020; }
+
+    @media (max-width: 600px) {
+      .bubble { max-width: 90%; }
+      .mood-intro { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-icon">🛍</span>
+    <div>
+      ShopMind
+      <div class="logo-sub">AI Shopping Agent</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <a href="/insights" class="header-link">📊 Merchant Insights</a>
+  </div>
+</header>
+
+<main>
+  <!-- Mood Canvas (L6) -->
+  <section id="mood-section">
+    <div class="mood-intro">Find the perfect gift</div>
+    <div class="mood-sub">Pick a few words that feel right — or just start typing below</div>
+    <div class="mood-tiles" id="mood-tiles">
+      <div class="mood-tile" data-tile="warm">🌅 Warm</div>
+      <div class="mood-tile" data-tile="minimal">⬜ Minimal</div>
+      <div class="mood-tile" data-tile="bold">⚡ Bold</div>
+      <div class="mood-tile" data-tile="handmade">🤲 Handmade</div>
+      <div class="mood-tile" data-tile="floral">🌸 Floral</div>
+      <div class="mood-tile" data-tile="classic">🎩 Classic</div>
+      <div class="mood-tile" data-tile="gentle">🕊 Gentle</div>
+      <div class="mood-tile" data-tile="luxury">✨ Luxury</div>
+      <div class="mood-tile" data-tile="playful">🎈 Playful</div>
+      <div class="mood-tile" data-tile="thoughtful">📖 Thoughtful</div>
+      <div class="mood-tile" data-tile="adventurous">🧭 Adventurous</div>
+      <div class="mood-tile" data-tile="nostalgic">🕰 Nostalgic</div>
+    </div>
+    <div class="mood-cta">
+      <button id="mood-submit" disabled>Start with these vibes →</button>
+      <span class="mood-skip" id="mood-skip">Skip — I'll describe it myself</span>
+    </div>
+  </section>
+
+  <!-- Chat area -->
+  <section id="chat-section">
+    <div id="messages"></div>
+  </section>
+</main>
+
+<!-- Fixed input -->
+<div id="input-area">
+  <div class="input-wrap">
+    <textarea id="user-input" rows="1" placeholder="Tell me about who you're shopping for..."></textarea>
+    <button id="send-btn">↑</button>
+  </div>
+</div>
+
+<script>
+  let sessionId = null;
+  let isLoading = false;
+
+  // ── Init session ──────────────────────────────────────────────────────────
+  async function initSession() {
+    const res = await fetch('/api/session', { method: 'POST' });
+    const data = await res.json();
+    sessionId = data.sessionId;
+    // L10: Check if this session has a pre-existing recipient profile (returning buyer)
+    // In this implementation profiles are in-memory per session, so this fires on
+    // profile updates during the conversation rather than on cold start.
+  }
+
+  // ── Mood tiles ────────────────────────────────────────────────────────────
+  const selectedTiles = new Set();
+  document.querySelectorAll('.mood-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      const val = tile.dataset.tile;
+      if (selectedTiles.has(val)) {
+        selectedTiles.delete(val);
+        tile.classList.remove('selected');
+      } else {
+        selectedTiles.add(val);
+        tile.classList.add('selected');
+      }
+      document.getElementById('mood-submit').disabled = selectedTiles.size === 0;
+    });
+  });
+
+  document.getElementById('mood-submit').addEventListener('click', async () => {
+    if (selectedTiles.size === 0) return;
+    startChat();
+    showTyping();
+    const tiles = Array.from(selectedTiles);
+    try {
+      const res = await fetch('/api/chat/mood', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, tiles }),
+      });
+      const data = await res.json();
+      removeTyping();
+      renderAIResponse(data);
+    } catch (e) {
+      removeTyping();
+      renderError();
+    }
+  });
+
+  document.getElementById('mood-skip').addEventListener('click', () => {
+    startChat();
+    addMessage('ai', { message: "Of course! Tell me — who is this for, or what are you looking for today?", question: null });
+  });
+
+  // ── Chat start ────────────────────────────────────────────────────────────
+  function startChat() {
+    document.getElementById('mood-section').style.display = 'none';
+    document.getElementById('chat-section').style.display = 'flex';
+    document.getElementById('input-area').style.display = 'block';
+    document.getElementById('user-input').focus();
+  }
+
+  // ── Send message ──────────────────────────────────────────────────────────
+  document.getElementById('send-btn').addEventListener('click', sendMessage);
+  document.getElementById('user-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  document.getElementById('user-input').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+
+  async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const text = input.value.trim();
+    if (!text || isLoading) return;
+
+    addUserBubble(text);
+    input.value = '';
+    input.style.height = 'auto';
+    isLoading = true;
+    document.getElementById('send-btn').disabled = true;
+
+    showTyping();
+    try {
+      const res = await fetch('/api/chat/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, message: text }),
+      });
+      const data = await res.json();
+      removeTyping();
+      renderAIResponse(data);
+    } catch (e) {
+      removeTyping();
+      renderError();
+    }
+    isLoading = false;
+    document.getElementById('send-btn').disabled = false;
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  function addUserBubble(text) {
+    const msgs = document.getElementById('messages');
+    const row = document.createElement('div');
+    row.className = 'msg-row user';
+    row.innerHTML = `
+      <div class="avatar user">👤</div>
+      <div class="bubble user">${escHtml(text)}</div>
+    `;
+    msgs.appendChild(row);
+    scrollBottom();
+  }
+
+  function addMessage(type, data) {
+    const msgs = document.getElementById('messages');
+    const row = document.createElement('div');
+    row.className = 'msg-row';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ai';
+
+    let html = `<div>${escHtml(data.message)}</div>`;
+    if (data.question) {
+      html += `<div class="question">💭 ${escHtml(data.question)}</div>`;
+    }
+    bubble.innerHTML = html;
+
+    row.innerHTML = `<div class="avatar ai">🛍</div>`;
+    row.appendChild(bubble);
+    msgs.appendChild(row);
+    scrollBottom();
+  }
+
+  function renderAIResponse(data) {
+    const msgs = document.getElementById('messages');
+    const row = document.createElement('div');
+    row.className = 'msg-row';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ai';
+    let html = `<div>${escHtml(data.message)}</div>`;
+    if (data.question) {
+      html += `<div class="question">💭 ${escHtml(data.question)}</div>`;
+    }
+    bubble.innerHTML = html;
+    row.innerHTML = `<div class="avatar ai">🛍</div>`;
+    row.appendChild(bubble);
+    msgs.appendChild(row);
+
+    // L10 — Return visit banner (show if recipient profile exists from a past session)
+    if (data.recipientProfile && Object.keys(data.recipientProfile).length > 0) {
+      const existing = document.querySelector('.return-banner');
+      if (!existing) {
+        const rp = data.recipientProfile;
+        const name = rp.relationship ? rp.relationship : 'someone special';
+        const occasion = rp.occasion ? ` for their ${rp.occasion}` : '';
+        const pref = (rp.preferences && rp.preferences.length > 0) ? ` Last time they loved ${rp.preferences[0]}.` : '';
+        const banner = document.createElement('div');
+        banner.className = 'return-banner';
+        banner.innerHTML = `
+          <div class="return-banner-icon">👋</div>
+          <div class="return-banner-text">
+            <strong>Shopping for ${escHtml(name)} again${escHtml(occasion)}?</strong>${escHtml(pref)} I remember what worked last time.
+          </div>
+        `;
+        msgs.insertBefore(banner, msgs.firstChild);
+      }
+    }
+
+    // Product recommendation (L4, L7)
+    if (data.recommendation?.product) {
+      msgs.appendChild(buildProductCard(data.recommendation, data.regretPrevention));
+    }
+
+    // L3 — Comparison card (when agent compares two products)
+    if (data.comparison?.product1Handle && data.comparison?.product2Handle) {
+      msgs.appendChild(buildComparisonCard(data.comparison));
+    }
+
+    // L8: regret prevention is now rendered inside the product card (above Add to Cart)
+
+    // Upsell (L9)
+    if (data.upsell?.product) {
+      msgs.appendChild(buildUpsellCard(data.upsell));
+    }
+
+    scrollBottom();
+  }
+
+  // ── L3: Comparison card builder ────────────────────────────────────────
+  function buildComparisonCard(comp) {
+    const card = document.createElement('div');
+    card.className = 'comparison-card';
+    const dim = comp.dimension || 'key dimension';
+    const verdict = comp.verdict || '';
+    // Determine winner from verdict text
+    const p1wins = verdict.toLowerCase().includes(comp.product1Handle?.split('-')[0] || 'first');
+    card.innerHTML = `
+      <div class="comparison-header">Comparing on: ${escHtml(dim)}</div>
+      <div class="comparison-cols">
+        <div class="comparison-col ${p1wins ? 'winner' : ''}">
+          <div class="comparison-col-title">${escHtml((comp.product1Handle || '').replace(/-/g, ' '))}</div>
+          <div class="comparison-col-dim">${p1wins ? '✓ Better match for you' : 'Good option'}</div>
+          ${p1wins ? '<div class="comparison-winner-tag">Recommended ↑</div>' : ''}
+        </div>
+        <div class="comparison-col ${!p1wins ? 'winner' : ''}">
+          <div class="comparison-col-title">${escHtml((comp.product2Handle || '').replace(/-/g, ' '))}</div>
+          <div class="comparison-col-dim">${!p1wins ? '✓ Better match for you' : 'Good option'}</div>
+          ${!p1wins ? '<div class="comparison-winner-tag">Recommended ↑</div>' : ''}
+        </div>
+      </div>
+      <div class="comparison-verdict">${escHtml(verdict)}</div>
+    `;
+    return card;
+  }
+
+  function buildProductCard(rec, regretPrevention) {
+    // Merge regretPrevention into rec for rendering inside card
+    if (regretPrevention?.objection) rec = { ...rec, regretPrevention };
+    const p = rec.product;
+    const conf = rec.confidence || 0;
+    const confClass = conf >= 85 ? 'conf-high' : conf >= 65 ? 'conf-mid' : 'conf-low';
+    const confEmoji = conf >= 85 ? '✅' : conf >= 65 ? '⚡' : '🔎';
+
+    const card = document.createElement('div');
+    card.className = 'product-card';
+
+    const imgHtml = p.image
+      ? `<img src="${escHtml(p.image)}" alt="${escHtml(p.title)}" />`
+      : `<div class="img-placeholder" style="background:linear-gradient(135deg,#f5f0eb,#ede8e0);display:flex;align-items:center;justify-content:center;font-size:48px;color:#c9a97a;">🎁</div>`;
+
+    const socialHtml = rec.socialProof
+      ? `<div class="social-proof">
+          <div class="quote">"${escHtml(rec.socialProof.quote)}"</div>
+          <div class="persona">— ${escHtml(rec.socialProof.persona)}</div>
+        </div>`
+      : '';
+
+    const caveatHtml = rec.caveat
+      ? `<div class="caveat">⚠️ ${escHtml(rec.caveat)}</div>`
+      : '';
+
+    // L8: regret prevention — always shown inside card, above Add to Cart
+    const regretHtml = (rec.regretPrevention?.objection || rec.regretObjection)
+      ? `<div class="regret-card" style="margin-top:12px">
+          <div class="objection">💬 "${escHtml(rec.regretPrevention?.objection || rec.regretObjection)}"</div>
+          <div class="answer">${escHtml(rec.regretPrevention?.answer || rec.regretAnswer || '')}</div>
+        </div>`
+      : '';
+
+    card.innerHTML = `
+      ${imgHtml}
+      <div class="product-body">
+        <div class="confidence-badge ${confClass}">${confEmoji} ${conf}% match</div>
+        <div class="product-title">${escHtml(p.title)}</div>
+        <div class="product-price">${escHtml(p.priceFormatted || '₹' + p.price)}</div>
+        <div class="product-reason">${escHtml(rec.reason || '')}</div>
+        <div class="confidence-bar">
+          <div class="confidence-label"><span>Match strength</span><span>${conf}%</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:0%" data-width="${conf}%"></div></div>
+        </div>
+        ${socialHtml}
+        ${caveatHtml}
+        ${regretHtml}
+        <div class="product-actions">
+          <button class="btn-cart" data-variant="${escHtml(p.variantId || '')}" data-title="${escHtml(p.title)}">
+            🛒 Add to Cart
+          </button>
+          <button class="btn-secondary" onclick="askMore()">Ask something</button>
+        </div>
+      </div>
+    `;
+
+    // Animate confidence bar after render
+    setTimeout(() => {
+      const bar = card.querySelector('.bar-fill');
+      if (bar) bar.style.width = bar.dataset.width;
+    }, 100);
+
+    // Cart handler
+    card.querySelector('.btn-cart').addEventListener('click', async function() {
+      const variantId = this.dataset.variant;
+      const title = this.dataset.title;
+      if (!variantId) { showCheckoutMessage('Unable to add — variant not found.'); return; }
+      this.disabled = true;
+      this.textContent = 'Adding...';
+      try {
+        const res = await fetch('/api/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ variantId, quantity: 1 }),
+        });
+        const data = await res.json();
+        if (data.success && data.checkoutUrl) {
+          this.textContent = '✅ Added!';
+          showCheckoutBanner(data.checkoutUrl, title);
+        } else {
+          this.textContent = '❌ Error — try again';
+          this.disabled = false;
+        }
+      } catch (e) {
+        this.textContent = '❌ Error — try again';
+        this.disabled = false;
+      }
+    });
+
+    return card;
+  }
+
+  function buildUpsellCard(upsell) {
+    const p = upsell.product;
+    const card = document.createElement('div');
+    card.className = 'upsell-card';
+
+    const imgHtml = p.image
+      ? `<img class="upsell-img" src="${escHtml(p.image)}" alt="${escHtml(p.title)}" />`
+      : `<div class="upsell-img-placeholder" style="background:linear-gradient(135deg,#f5f0eb,#ede8e0);display:flex;align-items:center;justify-content:center;font-size:28px;">🎁</div>`;
+
+    card.innerHTML = `
+      ${imgHtml}
+      <div class="upsell-info">
+        <div class="upsell-tag">✨ Complete the experience</div>
+        <div class="upsell-title">${escHtml(p.title)}</div>
+        <div class="upsell-framing">${escHtml(upsell.framing || '')}</div>
+        ${(p.price && parseFloat(p.price) > 0) ? `<div class="upsell-price">${escHtml(p.priceFormatted || '₹' + Math.round(p.price))}</div>` : ''}
+      </div>
+      <button class="btn-upsell" data-variant="${escHtml(p.variantId || '')}">Add</button>
+    `;
+
+    card.querySelector('.btn-upsell').addEventListener('click', async function() {
+      const variantId = this.dataset.variant;
+      if (!variantId) return;
+      this.disabled = true;
+      this.textContent = '...';
+      try {
+        const res = await fetch('/api/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ variantId, quantity: 1 }),
+        });
+        const data = await res.json();
+        if (data.success && data.checkoutUrl) {
+          this.textContent = '✅';
+          showCheckoutBanner(data.checkoutUrl, p.title);
+        } else {
+          this.textContent = 'Error';
+          this.disabled = false;
+        }
+      } catch (e) {
+        this.textContent = 'Error';
+        this.disabled = false;
+      }
+    });
+
+    return card;
+  }
+
+  function showCheckoutBanner(url, title) {
+    const msgs = document.getElementById('messages');
+    const banner = document.createElement('div');
+    banner.className = 'checkout-banner';
+    banner.innerHTML = `
+      <span>🎉 <strong>${escHtml(title)}</strong> added to your cart!</span>
+      <a href="${escHtml(url)}" target="_blank">Complete checkout →</a>
+    `;
+    msgs.appendChild(banner);
+    scrollBottom();
+  }
+
+  function showCheckoutMessage(msg) {
+    const msgs = document.getElementById('messages');
+    const el = document.createElement('div');
+    el.style.cssText = 'font-size:13px;color:var(--muted);text-align:center;padding:8px;';
+    el.textContent = msg;
+    msgs.appendChild(el);
+    scrollBottom();
+  }
+
+  function askMore() {
+    document.getElementById('user-input').focus();
+  }
+
+  function showTyping() {
+    const msgs = document.getElementById('messages');
+    const row = document.createElement('div');
+    row.className = 'msg-row';
+    row.id = 'typing-row';
+    row.innerHTML = `
+      <div class="avatar ai">🛍</div>
+      <div class="bubble ai"><div class="typing"><span></span><span></span><span></span></div></div>
+    `;
+    msgs.appendChild(row);
+    scrollBottom();
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing-row');
+    if (el) el.remove();
+  }
+
+  function renderError() {
+    const msgs = document.getElementById('messages');
+    const row = document.createElement('div');
+    row.className = 'msg-row';
+    row.innerHTML = `<div class="avatar ai">🛍</div><div class="bubble ai">Something went wrong — please try again.</div>`;
+    msgs.appendChild(row);
+    scrollBottom();
+  }
+
+  function scrollBottom() {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  initSession();
+</script>
+</body>
+</html>

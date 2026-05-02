@@ -26,8 +26,4 @@
 **Screenshot 12 (insights dashboard):** Visit localhost:3000/insights after having at least 3-4 conversations. More conversations = richer data.
 
 ## Tips
-
-- Crop to browser content only — no OS taskbar or other windows visible
-- Minimum resolution: 1280×800
-- Screenshots 5, 6, 7, 8 should come from the same single conversation flow — they stack in the UI
 - If confidence is low in early turns, that's intentional — it shows the system is genuinely uncertain and asks one more question
